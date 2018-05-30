@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru-Ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Другофильтр</title>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.js"></script>
+	<script src="http://vk.com/js/api/openapi.js" type="text/javascript"></script>
+	<link href="/styles/main.css" rel="stylesheet">
+</head>
+<body>
+	<div class="dialog__wrapper">
+		<div class="logo__wrapper">
+			<img class="logo__img" src="/img/logo.png" alt="другофильтр">
+		</div>
+		<div class="filter__wrapper">
+			<div class="filter__container">
+				<div class="filter__title">
+					<h3 class="filter__title-text">Выберите друзей</h3>
+					<div class="filter__title-close">
+						<a class="close" href="">
+							<svg class="close__svg close__svg_white">
+								<use xlink:href="/img/cross.svg#cross"></use>
+							</svg>
+						</a>
+					</div>
+				</div>
+				<ul class="search">
+					<li class="search__item search__item_left">
+						<span class="search__pic fas fa-search"></span>
+						<input class="search__input" type="text" name="search_not-selected" placeholder="Начните вводить имя друга">
+					</li>
+					<li class="search__item search__item_right">
+						<span class="search__pic fas fa-search"></span>
+						<input class="search__input" type="text" name="search_selected" placeholder="Начните вводить имя друга">
+					</li>
+				</ul>
+				<div class="filter__content">
+					<ul class="friends">
+						<li class="friends__column friends__column__vk">
+							<div class="friends__column-descr">Ваши друзья</div>
+							<ul class="friends__list friends__list_vk">
+							</ul>
+						</li>
+						<li class="friends__column friends__column__selected">
+							<div class="friends__column-descr">Друзья в списке</div>
+							<ul class="friends__list friends__list_selected">
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="filter__save">
+				<button class="filter__save__btn">Сохранить</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
