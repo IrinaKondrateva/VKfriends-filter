@@ -58,7 +58,7 @@ textarea {
 }
 
 .dialog__wrapper {
-    padding-top: 88px;
+    padding-top: 11.5vh;
 }
 
 .logo__wrapper {
@@ -168,12 +168,10 @@ textarea {
     display: -ms-flexbox;
     display: flex;
     color: #4f4f4f;
-    height: 363px;
 }
 
 .friends__column {
     width: 50%;
-    overflow: auto;
     padding: 15px 15px 0 15px;
     border-right: 1px solid #f0f0f0;
 }
@@ -181,6 +179,23 @@ textarea {
 .friends__column-descr {
     height: 17px;
     border-bottom: 1px solid #f0f0f0;
+}
+
+.friends__list {
+    height: 325px;
+    overflow: auto;
+    padding-right: 7px;
+}
+
+.friends__list::-webkit-scrollbar {
+   width: 3px; 
+}
+
+.friends__list::-webkit-scrollbar-thumb {
+    width: 3px;
+    height: 80px;
+    background-color: #c4c4c4;
+    border-radius: 6px;
 }
 
 .friends__item {
@@ -245,11 +260,13 @@ textarea {
 }
 
 .filter__save {
-    height: 37px;
+    height: 45px;
     background: #f0f0f0;
     border-radius: 0 0 10px 10px;
-    padding-right: 7px;
-    text-align: right;
+    padding-right: 8px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .filter__save__btn {

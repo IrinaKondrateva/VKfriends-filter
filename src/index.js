@@ -1,63 +1,71 @@
 import { friendTemplate } from '../js/template';
 
-VK.init({
-	apiId: 6490087
-});
 
-
-function auth() {
-	return new Promise((resolve, reject) => {
-		VK.Auth.login(data => {
-			if (data.session) {
-				resolve();
-			} else {
-				reject(new Error('Не удалось авторизоваться'));
-			}
-		}, 2);
+let loadVkFriends = () => {
+	VK.init({
+		apiId: 6490087
 	});
-}
 
-function callAPI(method, params) {
-	params.v = '5.76';
-
-	return new Promise((resolve, reject) => {
-		VK.api(method, params, (data) => {
-			if (data.error) {
-				reject(data.error);
-			} else {
-				resolve(data.response);
-			}
+	function auth() {
+		return new Promise((resolve, reject) => {
+			VK.Auth.login(data => {
+				if (data.session) {
+					resolve();
+				} else {
+					reject(new Error('Не удалось авторизоваться'));
+				}
+			}, 2);
 		});
-	})
-}
-
-/*auth()
-	.then(() => {
-		return callAPI('friends.get', { fields: 'photo_50' });
-	})
-	.then(friends => {
-		friendsVk = friends.items;
-		renderFriends(friends.items);
-	})
-	.catch(e => {
-		console.warn(e);
-	});*/
-
-(async () => {
-	try {
-		await auth();
-		const friends = await callAPI('friends.get', { fields: 'photo_50' });
-		renderFriends(friends.items);
-		friendsVk = friends.items;
-	} catch (e) {
-		console.error(e);
 	}
-})();
 
-var friendsVk = [];
+	function callAPI(method, params) {
+		params.v = '5.76';
+
+		return new Promise((resolve, reject) => {
+			VK.api(method, params, (data) => {
+				if (data.error) {
+					reject(data.error);
+				} else {
+					resolve(data.response);
+				}
+			});
+		})
+	}
+
+	(async () => {
+		try {
+			await auth();
+			const friends = await callAPI('friends.get', { fields: 'photo_50' });
+			renderFriends(friends.items);
+			friendsVk = friends.items;
+		} catch (e) {
+			console.error(e);
+		}
+	})();
+};
+
+var friendsVk;
 var friendsSelected = [];
 const vkFriends = document.querySelector('.friends__list_vk');
 const selectFriends = document.querySelector('.friends__list_selected');
+const vkInput = document.getElementsByName('search_not-selected')[0];
+const selectedInput = document.getElementsByName('search_selected')[0];
+const saveBtn = document.querySelector('.filter__save__btn');
+
+document.addEventListener("DOMContentLoaded", (e) => {
+	if (localStorage.length > 1) {
+		try {
+			friendsVk = JSON.parse(localStorage['vkFriends']);
+			friendsSelected = JSON.parse(localStorage['selectFriends']);
+		} catch (e) {
+			console.error(e);
+		};
+		renderFriends(friendsVk);
+		renderFriends(friendsSelected, true);
+	} else {
+		loadVkFriends();
+	};
+});
 
 function renderFriends(friends, selected) {
 	let friendsHtml = '';
@@ -77,18 +85,18 @@ document.addEventListener('input', (e) => {
 	const { value } = e.target.closest('.search__input');
 	
 	if (e.target.name == 'search_not-selected') {
-		filterFrByName(friendsVk);
-		renderFriends(filteredFr)
+		const filteredFr = filterFrByName(friendsVk, value);
+		renderFriends(filteredFr);
 	} else {
-		filterFrByName(friendsSelected);
+		const filteredFr = filterFrByName(friendsSelected, value);
 		renderFriends(filteredFr, true);
 	}
 });
 
-function filterFrByName(friendsArr) {
-	return filteredFr = friendsArr.filter(friend => {
+function filterFrByName(friendsArr, name) {
+	return friendsArr.filter(friend => {
 		let fullName = `${friend.first_name} ${friend.last_name}`;
-		return fullName.toLowerCase().includes(value.toLowerCase());
+		return fullName.toLowerCase().includes(name.toLowerCase());
 	});
 }
 
@@ -99,6 +107,7 @@ document.addEventListener('click', (e) => {
 
 	e.preventDefault();
 
+
 	if (addOrRemove.classList.contains('friends__add')) {
 		shiftFriend(friendsVk, friendsSelected, addOrRemove);
 	} else {
@@ -106,34 +115,96 @@ document.addEventListener('click', (e) => {
 		friendsVk = friendsVk.sort((a, b) => a.id - b.id);
 	};
 
-	renderFriends(friendsVk);
-	renderFriends(friendsSelected, true);
+	renderFrDueInput();
 });
 
-function shiftFriend(from, to, trigger) {
+function renderFrDueInput() {
+	if (vkInput.value || selectedInput.value) {
+		renderFriends(filterFrByName(friendsVk, vkInput.value));
+		renderFriends(filterFrByName(friendsSelected, selectedInput.value), true);
+	} else {
+		renderFriends(friendsVk);
+		renderFriends(friendsSelected, true);
+	};
+}
+
+function shiftFriend(from, to, trigger, dndId) {
 	for (let i = 0; i < from.length; i++) {
 		if (from[i].id == trigger.dataset.id) {
 			let friendShifted = from.splice(i, 1)[0];
+
 			friendShifted.selected = !friendShifted.selected;
-			to.push(friendShifted);
+			
+			if (dndId) {
+				for (let j = 0; j < to.length; j++) {
+					if (to[j].id === dndId) {
+						to.splice(j + 1, 0, friendShifted);
+						return;
+					}
+				};
+			} else {
+				to.push(friendShifted);
+			}
+
 			return;
 		};
 	};
-}	
+}
 
+// сохранение списков в localStorage
 
-/*document.addEventListener('click', (e) => {
-	if (!e.target.closest('.friends__remove')) return;
+saveBtn.addEventListener('click', (e) => {
+	if (!confirm('Подтвердите сохранение списков')) return;
+	localStorage.setItem('selectFriends', JSON.stringify(friendsSelected));
+	localStorage.setItem('vkFriends', JSON.stringify(friendsVk));
+});
 
-	e.preventDefault();
-	for (let i = 0; i < friendsSelected.length; i++) {
-		if (friendsSelected[i].id == e.target.closest('.friends__remove').dataset.id) {
-			let friendDelete = friendsSelected.splice(i, 1)[0];
-			friendDelete.selected = false;
-			friendsVk.push(friendDelete); //отсортировать по айдишкам
-		}
+// Drag&Drop HTML5
+
+(() => {
+	let currentDrag;
+
+	document.addEventListener('dragstart', (e) => {
+		const zone = getCurrentZone(e.target);
+
+		if (zone) {
+			currentDrag = {startZone: zone, node: e.target};
+		};
+	});
+
+	document.addEventListener('dragover', (e) => {
+		const zone = getCurrentZone(e.target);
+
+		if (zone) {
+			e.preventDefault();
+		};
+	});
+
+	document.addEventListener('drop', (e) => {
+		if (currentDrag) {
+			const zone = getCurrentZone(e.target);
+
+			e.preventDefault();
+
+			if (zone && currentDrag.startZone !== zone) {
+				const addtrigger = currentDrag.node.querySelector('.friends__add');
+				
+				if (e.target.closest('.friends__item')) {
+					const dndtrigger = +e.target.closest('.friends__item').querySelector('.friends__remove').dataset.id;
+
+					shiftFriend(friendsVk, friendsSelected, addtrigger, dndtrigger);
+				} else {
+					shiftFriend(friendsVk, friendsSelected, addtrigger);
+				};
+
+				renderFrDueInput();
+			};
+
+		currentDrag = null;
+		};
+	});
+
+	function getCurrentZone(from) {
+		return from.closest('.friends__list');
 	}
-	let frVkSortById = friendsVk.sort((a, b) => a.id - b.id);
-	renderFriends(frVkSortById);
-	renderFriends(friendsSelected, true);	
-});*/
+})();

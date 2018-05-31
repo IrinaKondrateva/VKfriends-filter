@@ -1,7 +1,7 @@
 const friendTemplateHbs = `
-    <li class="friends__item">
+    <li class="friends__item" {{#unless selected}}draggable="true"{{/unless}}>
         <div class="friends__photo-wrapper">
-            <img class="friends__photo" src="{{photo_50}}" alt="{{first_name}} {{last_name}}">
+            <img class="friends__photo" src="{{photo_50}}" draggable="false" alt="{{first_name}} {{last_name}}">
         </div>
         <div class="friends__name">{{first_name}} {{last_name}}</div>
         {{#if selected}}
