@@ -1,5 +1,14 @@
 import { friendTemplate } from '../js/template';
 
+let friendsVk;
+let friendsSelected = [];
+const vkFriends = document.querySelector('.friends__list_vk');
+const selectFriends = document.querySelector('.friends__list_selected');
+const vkInput = document.getElementsByName('search_not-selected')[0];
+const selectedInput = document.getElementsByName('search_selected')[0];
+const saveBtn = document.querySelector('.filter__save__btn');
+
+// загрузка друзей из Вк
 
 let loadVkFriends = () => {
 	VK.init({
@@ -44,14 +53,6 @@ let loadVkFriends = () => {
 	})();
 };
 
-var friendsVk;
-var friendsSelected = [];
-const vkFriends = document.querySelector('.friends__list_vk');
-const selectFriends = document.querySelector('.friends__list_selected');
-const vkInput = document.getElementsByName('search_not-selected')[0];
-const selectedInput = document.getElementsByName('search_selected')[0];
-const saveBtn = document.querySelector('.filter__save__btn');
-
 document.addEventListener("DOMContentLoaded", (e) => {
 	if (localStorage.length > 1) {
 		try {
@@ -67,17 +68,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
 	};
 });
 
-function renderFriends(friends, selected) {
-	let friendsHtml = '';
-
-	selected ? selectFriends.innerHTML = '' : vkFriends.innerHTML = '';
-
-	for (const friend of friends) {
-		friendsHtml += friendTemplate(friend);
-	}
-
-	selected ? selectFriends.innerHTML = friendsHtml : vkFriends.innerHTML = friendsHtml;
-}
+// сортировка друзей по именам
 
 document.addEventListener('input', (e) => {
 	if (!e.target.closest('.search__input')) return;
@@ -93,12 +84,7 @@ document.addEventListener('input', (e) => {
 	}
 });
 
-function filterFrByName(friendsArr, name) {
-	return friendsArr.filter(friend => {
-		let fullName = `${friend.first_name} ${friend.last_name}`;
-		return fullName.toLowerCase().includes(name.toLowerCase());
-	});
-}
+// добавление/удаление друзей из списка избранных
 
 document.addEventListener('click', (e) => {
 	const addOrRemove = (e.target.closest('.friends__remove') || e.target.closest('.friends__add'));
@@ -117,39 +103,6 @@ document.addEventListener('click', (e) => {
 
 	renderFrDueInput();
 });
-
-function renderFrDueInput() {
-	if (vkInput.value || selectedInput.value) {
-		renderFriends(filterFrByName(friendsVk, vkInput.value));
-		renderFriends(filterFrByName(friendsSelected, selectedInput.value), true);
-	} else {
-		renderFriends(friendsVk);
-		renderFriends(friendsSelected, true);
-	};
-}
-
-function shiftFriend(from, to, trigger, dndId) {
-	for (let i = 0; i < from.length; i++) {
-		if (from[i].id == trigger.dataset.id) {
-			let friendShifted = from.splice(i, 1)[0];
-
-			friendShifted.selected = !friendShifted.selected;
-			
-			if (dndId) {
-				for (let j = 0; j < to.length; j++) {
-					if (to[j].id === dndId) {
-						to.splice(j + 1, 0, friendShifted);
-						return;
-					}
-				};
-			} else {
-				to.push(friendShifted);
-			}
-
-			return;
-		};
-	};
-}
 
 // сохранение списков в localStorage
 
@@ -208,3 +161,60 @@ saveBtn.addEventListener('click', (e) => {
 		return from.closest('.friends__list');
 	}
 })();
+
+function renderFriends(friends, selected) {
+	let friendsHtml = '';
+
+	selected ? selectFriends.innerHTML = '' : vkFriends.innerHTML = '';
+
+	for (const friend of friends) {
+		friendsHtml += friendTemplate(friend);
+	}
+
+	selected ? selectFriends.innerHTML = friendsHtml : vkFriends.innerHTML = friendsHtml;
+}
+
+function renderFrDueInput() {
+	if (vkInput.value || selectedInput.value) {
+		renderFriends(filterFrByName(friendsVk, vkInput.value));
+		renderFriends(filterFrByName(friendsSelected, selectedInput.value), true);
+	} else {
+		renderFriends(friendsVk);
+		renderFriends(friendsSelected, true);
+	};
+}
+
+function filterFrByName(friendsArr, name) {
+	return friendsArr.filter(friend => {
+		let fullName = `${friend.first_name} ${friend.last_name}`;
+		return fullName.toLowerCase().includes(name.toLowerCase());
+	});
+}
+
+function shiftFriend(from, to, trigger, dndId) {
+	for (let i = 0; i < from.length; i++) {
+		if (from[i].id == trigger.dataset.id) {
+			let friendShifted = from.splice(i, 1)[0];
+
+			friendShifted.selected = !friendShifted.selected;
+			
+			if (dndId) {
+				for (let j = 0; j < to.length; j++) {
+					if (to[j].id === dndId) {
+						to.splice(j + 1, 0, friendShifted);
+						return;
+					}
+				};
+			} else {
+				to.push(friendShifted);
+			}
+
+			return;
+		};
+	};
+}
+
+document.addEventListener('click', (e) => {
+	if (!e.target.closest('.close')) return;
+	document.querySelector('.dialog__wrapper').classList.add('hidden');
+});

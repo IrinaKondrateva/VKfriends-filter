@@ -33,6 +33,15 @@ body {
     font-family: 'Fira Sans', sans-serif;
     font-size: 12px;
     background-color: #999;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
 h2,
@@ -57,8 +66,21 @@ textarea {
     outline: none;
 }
 
+.hidden {
+    display: none;
+}
+
+.main-page__wrapper {
+    text-align: center;
+    color: #ff8663;
+}
+
 .dialog__wrapper {
-    padding-top: 11.5vh;
+    top: 11.5vh;
+    left: 0;
+    right: 0;
+    position: absolute;
+    z-index: 50;
 }
 
 .logo__wrapper {
