@@ -1,4 +1,5 @@
-import { friendTemplate } from '../js/template';
+import { friendTemplate } from './template.js';
+import Model from './model.js';
 
 let friendsVk;
 let friendsSelected = [];
@@ -8,64 +9,40 @@ const vkInput = document.getElementsByName('search_not-selected')[0];
 const selectedInput = document.getElementsByName('search_selected')[0];
 const saveBtn = document.querySelector('.filter__save__btn');
 
-// загрузка друзей из Вк
-
-let loadVkFriends = () => {
-	VK.init({
-		apiId: 6490087
-	});
-
-	function auth() {
-		return new Promise((resolve, reject) => {
-			VK.Auth.login(data => {
-				if (data.session) {
-					resolve();
-				} else {
-					reject(new Error('Не удалось авторизоваться'));
-				}
-			}, 2);
-		});
-	}
-
-	function callAPI(method, params) {
-		params.v = '5.76';
-
-		return new Promise((resolve, reject) => {
-			VK.api(method, params, (data) => {
-				if (data.error) {
-					reject(data.error);
-				} else {
-					resolve(data.response);
-				}
-			});
-		})
-	}
-
-	(async () => {
-		try {
-			await auth();
-			const friends = await callAPI('friends.get', { fields: 'photo_50' });
-			renderFriends(friends.items);
+function loadVkFriends() {
+	Model.login(6490087, 2)
+		.then(() => Model.getFriends({ fields: 'photo_50' })
+		)
+		.then((friends) => {
 			friendsVk = friends.items;
-		} catch (e) {
+
+			if (friendsSelected.length) {
+				friendsVk = friends.items.filter(friend => {
+					return !friendsSelected.some(friendSel => friendSel.id === friend.id);
+				});
+			} else {
+				friendsVk = friends.items;
+			}
+
+			renderFriends(friendsVk);
+		})
+		.catch(e => {
 			console.error(e);
-		}
-	})();
-};
+			alert('Ошибка: ' + e.message);
+		});
+}
 
 document.addEventListener("DOMContentLoaded", (e) => {
-	if (localStorage.length > 1) {
+	if (localStorage['selectFriends']) {
 		try {
-			friendsVk = JSON.parse(localStorage['vkFriends']);
 			friendsSelected = JSON.parse(localStorage['selectFriends']);
+			renderFriends(friendsSelected, true);
 		} catch (e) {
-			console.error(e);
-		};
-		renderFriends(friendsVk);
-		renderFriends(friendsSelected, true);
-	} else {
-		loadVkFriends();
-	};
+			console.error('Ошибка: ' + e.message);
+		}
+	}
+
+	loadVkFriends();
 });
 
 // сортировка друзей по именам
@@ -109,7 +86,7 @@ document.addEventListener('click', (e) => {
 saveBtn.addEventListener('click', (e) => {
 	if (!confirm('Подтвердите сохранение списков')) return;
 	localStorage.setItem('selectFriends', JSON.stringify(friendsSelected));
-	localStorage.setItem('vkFriends', JSON.stringify(friendsVk));
+	//localStorage.setItem('vkFriends', JSON.stringify(friendsVk));
 });
 
 // Drag&Drop HTML5
